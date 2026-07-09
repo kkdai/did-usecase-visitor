@@ -94,6 +94,11 @@ router.post('/api/access/status', async (req, res) => {
     return res.json({ verified: false, status: 'pending' });
   }
 
+  // 診斷：非「尚未出示(4002)」的回應都印出來，方便查驗證方實際回傳
+  if (!result.notFound) {
+    console.log(`[access/status] tid=${transactionId} mode=${pending.mode} http=${result.httpStatus} verified=${result.verified} raw=${result.debug}`);
+  }
+
   if (!result.verified) {
     return res.json({ verified: false, status: 'pending' });
   }

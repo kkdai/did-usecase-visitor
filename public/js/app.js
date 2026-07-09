@@ -26,7 +26,7 @@
   var visCount = 0;
 
   var POLL_INTERVAL = 3000;
-  var POLL_MAX = 40; // ~2 分鐘
+  var POLL_MAX = 100; // ~5 分鐘（手機出示可能較慢）
 
   function show(name) {
     Object.keys(stages).forEach(function (k) { stages[k].classList.toggle('on', k === name); });
