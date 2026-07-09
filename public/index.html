@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>訪客背書發證台 · did-usecase-visitor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%9F%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <span class="dot">🎟️</span>
+        <span>訪客背書發證台<br><small>did-usecase-visitor · 檢驗方應用 05</small></span>
+      </div>
+      <span class="tag">Issuer + Verifier 全鏈</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">Verifier + Issuer</span>
+        <h1>員工出示卡<span class="hl">解鎖門禁</span>，<br>還能<span class="hg">背書</span>發一張<br>限時訪客通行證。</h1>
+        <p class="lede">先<b>驗證員工卡</b>（OIDVP），驗過再<b>核發訪客憑證</b>（Issuer）。員工門禁 / 活動報名只驗一件事——是不是有效員工；訪客則拿到一張會自動到期的數位通行證。</p>
+        <div class="chips">
+          <span class="chip"><span class="ic">✓</span> 員工門禁 / 活動報名</span>
+          <span class="chip g"><span class="ic">✚</span> 驗證後發訪客卡</span>
+          <span class="chip"><span class="ic">✓</span> 通行證限時自動失效</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="term">
+          <div class="term-head">
+            <span class="lbl">大廳證件台 · Lobby</span>
+            <span class="live"><b></b> 連線中</span>
+          </div>
+
+          <div class="tabs" role="tablist">
+            <button class="tab" role="tab" aria-selected="true" data-mode="door">① 員工門禁 / 報名</button>
+            <button class="tab" role="tab" aria-selected="false" data-mode="visitor">② 訪客背書發證</button>
+          </div>
+
+          <div class="screen">
+            <div class="stage on" data-stage="idle-door">
+              <div class="badge-ic">🚪</div>
+              <div class="screen-title">員工刷卡進場</div>
+              <div class="screen-sub">出示員工卡即可解鎖會議室門禁，或報名內部活動。</div>
+            </div>
+            <div class="stage" data-stage="idle-visitor">
+              <div class="badge-ic gold">🤝</div>
+              <div class="screen-title">為訪客背書</div>
+              <div class="screen-sub">由一位在職員工出示員工卡背書，即可核發限時訪客通行證。</div>
+            </div>
+
+            <div class="stage" data-stage="qr">
+              <div class="qr-frame">
+                <img id="qrImg" alt="出示 QR" />
+                <div class="qr-scan"></div>
+              </div>
+              <div class="screen-title" id="qrTitle">請出示員工卡</div>
+              <div class="screen-sub mono" id="qrSub">等待數位皮夾出示…</div>
+            </div>
+
+            <div class="stage" data-stage="verifying">
+              <div class="spinner" id="spinner"></div>
+              <div class="screen-title" id="verifyingTitle">驗證中…</div>
+              <div class="poll" id="verifyingSub">POST /api/oidvp/result · polling</div>
+            </div>
+
+            <div class="stage" data-stage="granted">
+              <div class="stamp">✓</div>
+              <div class="screen-title">門禁已開啟</div>
+              <div class="screen-sub mono">verify_result = true · claims 未取用</div>
+            </div>
+
+            <div class="stage" data-stage="pass">
+              <div class="pass">
+                <div class="lanyard"><i></i></div>
+                <div class="strip"><span class="t">VISITOR<small>訪客通行證</small></span><span class="vic">🎟️</span></div>
+                <div class="body">
+                  <div class="avatar">👤</div>
+                  <div class="who">
+                    <div class="nm">臨時訪客</div>
+                    <div class="by" id="endorsedBy">由員工背書</div>
+                  </div>
+                </div>
+                <div class="foot">
+                  <div class="valid">
+                    <div class="k">有效至</div>
+                    <div class="v" id="expiry">--:--</div>
+                  </div>
+                  <div class="miniqr" id="passQrWrap"><span class="ph">🎟️</span></div>
+                </div>
+              </div>
+              <div class="screen-sub mono" id="passNote">訪客卡已核發</div>
+            </div>
+
+            <div class="stage" data-stage="error">
+              <div class="stamp bad">!</div>
+              <div class="screen-title" id="errTitle">連線失敗</div>
+              <div class="screen-sub mono" id="errSub">請稍後再試</div>
+            </div>
+          </div>
+
+          <div class="term-foot">
+            <button class="btn" id="act">🚪　員工刷卡進場</button>
+            <a class="btn ghost" id="walletLink" href="#" target="_blank" rel="noopener" style="display:none">📲　用數位皮夾開啟</a>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <div class="stat">
+            <div class="k">本次門禁 / 報名</div>
+            <div class="v"><span id="doorCount">0</span> <small>次</small></div>
+          </div>
+          <div class="stat g">
+            <div class="k">本次核發訪客證</div>
+            <div class="v"><span id="visCount">0</span> <small>張</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="shead">
+        <span class="eyebrow">全鏈流程</span>
+        <h2>驗一張卡，再發一張卡</h2>
+        <p>同時當「檢驗方」又當「發卡方」：員工卡驗證通過，才觸發訪客卡核發。</p>
+      </div>
+      <div class="steps">
+        <div class="step v">
+          <span class="role-tag">Verifier</span>
+          <div class="n">STEP 01</div>
+          <h3>員工出示員工卡</h3>
+          <p>背書人用數位皮夾掃碼出示員工卡，後端輪詢 OIDVP 結果。</p>
+          <span class="api"><b>POST /api/access/qrcode → status</b></span>
+          <span class="arrow">→</span>
+        </div>
+        <div class="step i">
+          <span class="role-tag">Issuer</span>
+          <div class="n">STEP 02</div>
+          <h3>核發訪客通行證</h3>
+          <p>驗證通過即呼叫發卡 API，核發一張帶到期時間的臨時訪客憑證。</p>
+          <span class="api"><b>issueCredential()</b></span>
+          <span class="arrow">→</span>
+        </div>
+        <div class="step v">
+          <span class="role-tag">Verifier</span>
+          <div class="n">STEP 03</div>
+          <h3>訪客憑證通行</h3>
+          <p>訪客用這張證出示於各門禁 / 報到點，過期自動失效，免回收實體證件。</p>
+          <span class="api"><b>OIDVP presentation</b></span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>did-usecase-visitor · 檢驗方應用 05</p>
+      <p>issuer-sandbox.wallet.gov.tw · verifier-sandbox.wallet.gov.tw</p>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# 由 source 部署到 Cloud Run（buildpacks 自動建置 Node 應用）。
+# 環境變數建議改用 --set-secrets 或 Secret Manager；此處以替代變數示意。
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--source=.'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=VC_SERNUM=${_VC_SERNUM},VC_UID=${_VC_UID},ISSUER_ACCESS_TOKEN=${_ISSUER_ACCESS_TOKEN},VERIFIER_SPORT_REF=${_VERIFIER_SPORT_REF},VERIFIER_ACCESS_TOKEN=${_VERIFIER_ACCESS_TOKEN},VISITOR_TTL_HOURS=4'
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _SERVICE_NAME: did-usecase-visitor
+  _REGION: asia-east1
