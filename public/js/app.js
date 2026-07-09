@@ -129,15 +129,15 @@
 
   function renderPass(pass) {
     pass = pass || {};
-    endorsedByEl.textContent = '由' + (pass.endorsedBy || '員工') + '背書';
+    endorsedByEl.textContent = pass.endorsedBy || '—';
     expiryEl.textContent = pass.validUntilLabel || '--:--';
     if (pass.qrcode) {
-      passQrWrap.innerHTML = '<img alt="訪客證 QR" src="' + pass.qrcode + '">';
+      passQrWrap.innerHTML = '<img alt="訪客證領卡 QR" src="' + pass.qrcode + '">';
     } else {
       passQrWrap.innerHTML = '<span class="ph">🎟️</span>';
     }
     passNote.textContent = pass.issued
-      ? '訪客卡已核發至皮夾 · ' + (window.__ttl || 4) + ' 小時後自動失效'
+      ? '訪客卡已核發，掃碼或點下方按鈕加入皮夾'
       : '訪客卡待發（issuer 樣板未設定）· 驗證流程已完成';
     visCount += 1; visCountEl.textContent = visCount;
     show('pass');

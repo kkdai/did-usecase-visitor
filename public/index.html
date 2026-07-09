@@ -79,23 +79,14 @@
             <div class="stage" data-stage="pass">
               <div class="pass">
                 <div class="lanyard"><i></i></div>
-                <div class="strip"><span class="t">VISITOR<small>訪客通行證</small></span><span class="vic">🎟️</span></div>
-                <div class="body">
-                  <div class="avatar">👤</div>
-                  <div class="who">
-                    <div class="nm">臨時訪客</div>
-                    <div class="by" id="endorsedBy">由員工背書</div>
-                  </div>
+                <div class="strip"><span class="t">VISITOR<b>訪客通行證</b></span><span class="vic">🎟️</span></div>
+                <div class="qr"><div class="box" id="passQrWrap"><span class="ph">🎟️</span></div></div>
+                <div class="meta">
+                  <div class="cell"><div class="k">背書員工</div><div class="v" id="endorsedBy">—</div></div>
+                  <div class="cell"><div class="k">有效至</div><div class="v" id="expiry">--:--</div></div>
                 </div>
-                <div class="foot">
-                  <div class="valid">
-                    <div class="k">有效至</div>
-                    <div class="v" id="expiry">--:--</div>
-                  </div>
-                  <div class="miniqr" id="passQrWrap"><span class="ph">🎟️</span></div>
-                </div>
+                <div class="hint" id="passNote">訪客卡已核發，請掃碼加入皮夾</div>
               </div>
-              <div class="screen-sub mono" id="passNote">訪客卡已核發</div>
             </div>
 
             <div class="stage" data-stage="error">
