@@ -15,6 +15,8 @@ const VERIFIER_ACCESS_REF = process.env.VERIFIER_ACCESS_REF || process.env.VERIF
 //       未設定時回退為員工卡樣板，讓核發流程於 demo 仍可觸發。
 const VISITOR_VC_SERNUM = process.env.VISITOR_VC_SERNUM || process.env.VC_SERNUM;
 const VISITOR_VC_UID = process.env.VISITOR_VC_UID || process.env.VC_UID;
+// 是否已設定專屬「訪客通行證」樣板；否則回退為員工樣板並改用其必填欄位承載訪客資訊
+const HAS_VISITOR_TEMPLATE = !!(process.env.VISITOR_VC_SERNUM && process.env.VISITOR_VC_UID);
 
 const VISITOR_TTL_HOURS = Number(process.env.VISITOR_TTL_HOURS || 4);
 const PENDING_TTL_MS = 30 * 60 * 1000; // 30 分鐘
@@ -115,15 +117,28 @@ router.post('/api/access/status', async (req, res) => {
   const endorsedBy = shortToken();
   const now = new Date();
   const validUntil = new Date(now.getTime() + VISITOR_TTL_HOURS * 3600 * 1000);
-  const fields = [
-    { type: 'CUSTOM', cname: '訪客類別', ename: 'visitor_type', content: '一般訪客' },
-    { type: 'CUSTOM', cname: '背書員工', ename: 'endorsed_by', content: `EMP-${endorsedBy}` },
-    { type: 'CUSTOM', cname: '有效至', ename: 'valid_until', content: validUntil.toISOString() },
-  ];
+  const validUntilDate = validUntil.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  // 依是否有專屬訪客樣板，決定送出的欄位
+  const fields = HAS_VISITOR_TEMPLATE
+    ? [
+        { type: 'CUSTOM', cname: '訪客類別', ename: 'visitor_type', content: '一般訪客' },
+        { type: 'CUSTOM', cname: '背書員工', ename: 'endorsed_by', content: `EMP-${endorsedBy}` },
+        { type: 'CUSTOM', cname: '有效至', ename: 'valid_until', content: validUntil.toISOString() },
+      ]
+    : // 回退：用員工樣板必填欄位承載訪客資訊，讓真實卡片仍可發出
+      [
+        { type: 'NORMAL', cname: '姓名', ename: 'name', content: '臨時訪客' },
+        { type: 'CUSTOM', cname: '英文名字', ename: 'english_name', content: 'VISITOR' },
+        { type: 'NORMAL', cname: '民國出生年月日', ename: 'roc_birthday', content: '0000000' },
+        { type: 'CUSTOM', cname: '入職時間', ename: 'join_company', content: validUntilDate },
+        { type: 'CUSTOM', cname: '幾個小孩', ename: 'num_children', content: '0000000' },
+      ];
 
   let issue = { ok: false, qrCode: null, deepLink: null };
   try {
     issue = await wallet.issueCredential(VISITOR_VC_SERNUM, VISITOR_VC_UID, fields);
+    console.log(`[access/status] issue tid=${transactionId} template=${HAS_VISITOR_TEMPLATE ? 'visitor' : 'employee-fallback'} http=${issue.status} ok=${issue.ok} hasQR=${!!issue.qrCode}`);
   } catch (err) {
     console.error('[access/status] issue error:', err.message);
   }
