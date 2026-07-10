@@ -2,6 +2,9 @@
 
 數位皮夾（MODA wallet.gov.tw）HR 檢驗方應用 **05 — 內部門禁 / 活動報名 + 訪客背書發證**。
 
+<img width="1179" height="2556" alt="image" src="https://github.com/user-attachments/assets/9e94a522-fb65-46c9-999a-9823e9d5c5fd" />
+
+
 這是 [`did-usecase-HR`](../did-usecase-HR) 的延伸專案，示範同時扮演 **檢驗方（Verifier / OIDVP）** 與 **發行方（Issuer / VCI）** 的完整 DID 生態鏈：
 
 1. **員工門禁 / 報名**：員工用數位皮夾出示員工卡 → 驗證「持有有效員工卡」→ 開門 / 報名成功。
